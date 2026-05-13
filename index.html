@@ -492,7 +492,9 @@
         fetch(`${SB_URL}/rest/v1/productos?activo=eq.true&select=*&order=nombre`, { headers: h }),
         fetch(`${SB_URL}/rest/v1/combos?activo=eq.true&select=*&order=nombre`,    { headers: h })
       ])
-      prods  = await rp.json()
+      const ORDEN_FINAL = ['carne_molida', 'pollo_molido']
+      const raw = await rp.json()
+      prods  = [...raw.filter(p => !ORDEN_FINAL.includes(p.tipo)), ...raw.filter(p => ORDEN_FINAL.includes(p.tipo))]
       combos = await rc.json()
       document.getElementById('skel-wrap').style.display  = 'none'
       document.getElementById('prod-scroll').style.display = 'block'
