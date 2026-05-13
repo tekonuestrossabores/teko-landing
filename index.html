@@ -448,10 +448,11 @@
   }
 
   function render() {
-    // Agrupar chipas en una sola tarjeta
-    const chipa500 = prods.find(p => p.tipo === 'chipa_500')
-    const chipa1kg = prods.find(p => p.tipo === 'chipa_1kg')
-    const prodsUnicos = prods.filter(p => p.tipo !== 'chipa_500' && p.tipo !== 'chipa_1kg')
+    const MOLIDOS = ['carne_molida', 'pollo_molido']
+    const chipa500   = prods.find(p => p.tipo === 'chipa_500')
+    const chipa1kg   = prods.find(p => p.tipo === 'chipa_1kg')
+    const molidos    = prods.filter(p => MOLIDOS.includes(p.tipo))
+    const prodsUnicos = prods.filter(p => p.tipo !== 'chipa_500' && p.tipo !== 'chipa_1kg' && !MOLIDOS.includes(p.tipo))
 
     const chipasCard = (chipa500 && chipa1kg) ? `
       <div class="prod-card">
@@ -464,8 +465,8 @@
         </div>
       </div>` : ''
 
-    document.getElementById('prod-grid').innerHTML = prodsUnicos.map(p => {
-      const imgUrl = PROD_IMGS[p.tipo] || (p.nombre.toLowerCase().includes('empanada') ? 'https://qqsqzdnmhxubssdrkcbo.supabase.co/storage/v1/object/public/assets/prod-empanadas.jpg' : null)
+    const renderCard = p => {
+      const imgUrl = PROD_IMGS[p.tipo] || null
       return `
       <div class="prod-card">
         ${imgUrl ? `<img class="prod-img" src="${imgUrl}" alt="${p.nombre}" loading="lazy">` : `<div class="prod-img-placeholder"></div>`}
@@ -474,7 +475,12 @@
         <div class="prod-precio">${$(mayo ? p.precio_mayorista : p.precio_minorista)}</div>
         <div class="prod-unidad">por ${p.venta_por}</div>
       </div>`
-    }).join('') + chipasCard
+    }
+
+    document.getElementById('prod-grid').innerHTML =
+      prodsUnicos.map(renderCard).join('') +
+      chipasCard +
+      molidos.map(renderCard).join('')
 
     document.getElementById('combo-grid').innerHTML = combos.map(c => `
       <div class="combo-card">
@@ -492,9 +498,7 @@
         fetch(`${SB_URL}/rest/v1/productos?activo=eq.true&select=*&order=nombre`, { headers: h }),
         fetch(`${SB_URL}/rest/v1/combos?activo=eq.true&select=*&order=nombre`,    { headers: h })
       ])
-      const ORDEN_FINAL = ['carne_molida', 'pollo_molido']
-      const raw = await rp.json()
-      prods  = [...raw.filter(p => !ORDEN_FINAL.includes(p.tipo)), ...raw.filter(p => ORDEN_FINAL.includes(p.tipo))]
+      prods  = await rp.json()
       combos = await rc.json()
       document.getElementById('skel-wrap').style.display  = 'none'
       document.getElementById('prod-scroll').style.display = 'block'
