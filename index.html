@@ -281,18 +281,10 @@
       <span class="ptoggle-lbl" id="lbl-may">Mayorista</span>
     </label>
   </div>
-  <div class="prod-scroll-wrap" id="skel-wrap">
-    <div class="skel-grid" id="skel" style="display:flex;gap:2px;">
-      <div class="skel" style="min-width:240px"><div class="skel-ln" style="width:35%"></div><div class="skel-ln" style="width:65%;height:28px;margin-top:0.8rem"></div><div class="skel-ln" style="width:50%;height:36px;margin-top:1.5rem"></div></div>
-      <div class="skel" style="min-width:240px"><div class="skel-ln" style="width:35%"></div><div class="skel-ln" style="width:65%;height:28px;margin-top:0.8rem"></div><div class="skel-ln" style="width:50%;height:36px;margin-top:1.5rem"></div></div>
-      <div class="skel" style="min-width:240px"><div class="skel-ln" style="width:35%"></div><div class="skel-ln" style="width:65%;height:28px;margin-top:0.8rem"></div><div class="skel-ln" style="width:50%;height:36px;margin-top:1.5rem"></div></div>
-      <div class="skel" style="min-width:240px"><div class="skel-ln" style="width:35%"></div><div class="skel-ln" style="width:65%;height:28px;margin-top:0.8rem"></div><div class="skel-ln" style="width:50%;height:36px;margin-top:1.5rem"></div></div>
-    </div>
-  </div>
-  <div class="prod-scroll-wrap" id="prod-scroll" style="display:none">
+  <div class="prod-scroll-wrap" id="prod-scroll">
     <div class="prod-grid" id="prod-grid"></div>
   </div>
-  <div class="combo-grid" id="combo-grid" style="display:none; margin-top:1px"></div>
+  <div class="combo-grid" id="combo-grid" style="margin-top:1px"></div>
 </div>
 
 <!-- SOMOS -->
@@ -416,15 +408,30 @@
   }, { threshold: 0.1 })
   document.querySelectorAll('.reveal').forEach(el => obs.observe(el))
 
-  // ─────────────────────────────────────────────────────────────
-  // CATÁLOGO DESDE SUPABASE
-  // ⚠️ Reemplazá TU_ANON_KEY_AQUI con tu clave anon de Supabase.
-  // La encontrás en: Supabase Dashboard → Settings → API → anon public
-  // ─────────────────────────────────────────────────────────────
-  const SB_URL = 'https://qqsqzdnmhxubssdrkcbo.supabase.co'
-  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFxc3F6ZG5taHh1YnNzZHJrY2JvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1OTM2NjcsImV4cCI6MjA4ODE2OTY2N30.xIlzyM5z7vfcKrm679g-rzOQ8-1N2o8_orHoA4vZKPE'
+  // ─── CATÁLOGO (precios actualizados manualmente) ───────────────
+  // Para actualizar precios: editá los valores precio_minorista / precio_mayorista
+  // Para agregar un producto: sumá un objeto más al array prods o combos
 
-  let prods = [], combos = [], mayo = false
+  let mayo = false
+
+  const prods = [
+    { nombre: 'Pollo Crunch',      tipo: 'milanesa_pollo',  precio_minorista: 9600,  precio_mayorista: 8000,  venta_por: 'kg' },
+    { nombre: 'Peceto',            tipo: 'milanesa_peceto', precio_minorista: 18000, precio_mayorista: 17000, venta_por: 'kg' },
+    { nombre: 'Bastones de Pollo', tipo: 'bastones',        precio_minorista: 10000, precio_mayorista: 9000,  venta_por: 'kg' },
+    { nombre: 'Empanadas',         tipo: 'combo',           precio_minorista: 15000, precio_mayorista: 13000, venta_por: 'kg' },
+    { nombre: 'Chipas 500gr',      tipo: 'chipa_500',       precio_minorista: 6000,  precio_mayorista: 6000,  venta_por: 'unidad' },
+    { nombre: 'Chipas 1kg',        tipo: 'chipa_1kg',       precio_minorista: 11000, precio_mayorista: 9000,  venta_por: 'kg' },
+    { nombre: 'Carne Molida',      tipo: 'carne_molida',    precio_minorista: 16000, precio_mayorista: 15000, venta_por: 'kg' },
+    { nombre: 'Pollo Molido',      tipo: 'pollo_molido',    precio_minorista: 8000,  precio_mayorista: 7500,  venta_por: 'kg' },
+  ]
+
+  const combos = [
+    { nombre: 'Combo 1', descripcion: '1kg Peceto + 1kg Pollo',               precio: 27000 },
+    { nombre: 'Combo 2', descripcion: '2kg Pollo + 2kg Peceto',               precio: 53000 },
+    { nombre: 'Combo 3', descripcion: '2kg Chipas',                           precio: 21000 },
+    { nombre: 'Combo 4', descripcion: '2kg Pollo',                            precio: 19000 },
+    { nombre: 'Combo 5', descripcion: '1kg Peceto + 1kg Pollo + 1kg Chipas',  precio: 38000 },
+  ]
 
   const $ = n => '$' + Number(n).toLocaleString('es-AR')
 
@@ -491,24 +498,7 @@
       </div>`).join('')
   }
 
-  async function load() {
-    const h = { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
-    try {
-      const [rp, rc] = await Promise.all([
-        fetch(`${SB_URL}/rest/v1/productos?activo=eq.true&select=*&order=nombre`, { headers: h }),
-        fetch(`${SB_URL}/rest/v1/combos?activo=eq.true&select=*&order=nombre`,    { headers: h })
-      ])
-      prods  = await rp.json()
-      combos = await rc.json()
-      document.getElementById('skel-wrap').style.display  = 'none'
-      document.getElementById('prod-scroll').style.display = 'block'
-      document.getElementById('combo-grid').style.display = 'grid'
-      render()
-    } catch(e) {
-      console.error('Error cargando productos:', e)
-      document.getElementById('skel').innerHTML = '<p style="color:rgba(255,255,255,.3);padding:2rem 0">No se pudieron cargar los productos. Escribinos por WhatsApp.</p>'
-    }
-  }
+  render()
 
   document.getElementById('tog').addEventListener('change', function() {
     mayo = this.checked
@@ -516,8 +506,6 @@
     document.getElementById('lbl-may').classList.toggle('on',  mayo)
     render()
   })
-
-  load()
 
   // Drag to scroll en desktop
   document.querySelectorAll('.prod-scroll-wrap').forEach(el => {
