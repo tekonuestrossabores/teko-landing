@@ -56,9 +56,7 @@
       position: absolute; top: 0; left: 0; right: 0; z-index: 100;
       display: flex; justify-content: space-between; align-items: flex-start;
       padding: 0.4rem 3rem;
-      background: rgba(245,240,232,0.25);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      background: transparent;
     }
 
     .nav-logo { display: flex; align-items: center; }
@@ -69,6 +67,65 @@
     .nav-links { display: flex; gap: 2.5rem; list-style: none; }
     .nav-links a { font-size: 1rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dark); transition: color 0.2s; font-weight: 600; }
     .nav-links a:hover { color: var(--dark); }
+
+    /* Hamburger (mobile) */
+    .nav-burger {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      width: 36px;
+      height: 36px;
+      background: rgba(245,240,232,0.85);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      z-index: 201;
+      padding: 0;
+      flex-shrink: 0;
+    }
+    .nav-burger span {
+      display: block;
+      width: 18px;
+      height: 2px;
+      margin: 0 auto;
+      background: var(--dark);
+      border-radius: 2px;
+    }
+
+    /* Drawer mobile */
+    .nav-drawer-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(20,16,12,0.45);
+      z-index: 199;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .nav-drawer-overlay.open { display: block; opacity: 1; }
+    .nav-drawer {
+      position: fixed; top: 0; left: 0; bottom: 0;
+      width: 75vw; max-width: 300px;
+      background: var(--cream);
+      z-index: 200;
+      display: flex; flex-direction: column;
+      padding: 2rem 1.8rem;
+      gap: 0.4rem;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      box-shadow: 6px 0 28px rgba(0,0,0,0.18);
+    }
+    .nav-drawer.open { transform: translateX(0); }
+    .nav-drawer-close {
+      align-self: flex-end;
+      background: none; border: none; cursor: pointer;
+      color: var(--dark); margin-bottom: 1.5rem; padding: 0.4rem;
+    }
+    .nav-drawer a {
+      font-size: 1.05rem; letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--dark); font-weight: 600;
+      padding: 0.9rem 0; border-bottom: 1px solid var(--cream3);
+    }
 
     /* HERO */
     .hero { height: 100vh; min-height: 600px; position: relative; overflow: hidden; display: flex; align-items: flex-end; }
@@ -189,9 +246,10 @@
 
     /* Responsive */
     @media (max-width: 900px) {
-      nav { padding: 0.6rem 1.2rem; }
+      nav { padding: 0.8rem 1.2rem; align-items: center; }
       .nav-logo img { height: 80px; }
       .nav-links { display: none; }
+      .nav-burger { display: flex; }
       .hero { min-height: 100svh; }
       .hero-content { padding: 0 1.5rem 3rem; }
       .hero-title { font-size: clamp(2.2rem, 10vw, 4rem); }
@@ -228,6 +286,9 @@
 
 <!-- NAV -->
 <nav id="nav">
+  <button class="nav-burger" id="navBurger" aria-label="Abrir menú">
+    <span></span><span></span><span></span>
+  </button>
   <a href="#" class="nav-logo">
     <img
       src="https://qqsqzdnmhxubssdrkcbo.supabase.co/storage/v1/object/public/assets/logo-teko-only.png"
@@ -243,6 +304,17 @@
     <li><a href="#contacto">Contacto</a></li>
   </ul>
 </nav>
+
+<div class="nav-drawer-overlay" id="navOverlay"></div>
+<div class="nav-drawer" id="navDrawer">
+  <button class="nav-drawer-close" id="navDrawerClose" aria-label="Cerrar menú">
+    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+  </button>
+  <a href="#productos">Productos</a>
+  <a href="#somos">Nosotros</a>
+  <a href="#como-comprar">Cómo comprar</a>
+  <a href="#contacto">Contacto</a>
+</div>
 
 <!-- HERO -->
 <div class="hero">
@@ -396,6 +468,20 @@
 
 <script>
   // Nav scroll
+
+  // Menú mobile (drawer)
+  const navBurger = document.getElementById('navBurger')
+  const navDrawer = document.getElementById('navDrawer')
+  const navOverlay = document.getElementById('navOverlay')
+  const navDrawerClose = document.getElementById('navDrawerClose')
+
+  function openDrawer() { navDrawer.classList.add('open'); navOverlay.classList.add('open') }
+  function closeDrawer() { navDrawer.classList.remove('open'); navOverlay.classList.remove('open') }
+
+  navBurger.addEventListener('click', openDrawer)
+  navOverlay.addEventListener('click', closeDrawer)
+  navDrawerClose.addEventListener('click', closeDrawer)
+  navDrawer.querySelectorAll('a').forEach(a => a.addEventListener('click', closeDrawer))
 
   // Reveal on scroll
   const obs = new IntersectionObserver((entries) => {
